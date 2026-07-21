@@ -43,8 +43,10 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. ホバー判定およびY軸ズーム設定
-    hover = alt.selection_point(on="pointerover", clear="pointerout")
+    # 3. ホバー判定（未選択時の全選択動作を防ぐ empty=False を追加）およびY軸ズーム設定
+    hover = alt.selection_point(
+        on="pointerover", clear="pointerout", empty=False
+    )
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
     # 4. 共通の軸・データエンコーディング
@@ -58,13 +60,15 @@ try:
         url="サムネイルURL:N",
     )
 
-    # 通常表示層（縮小サイズ：幅50×高さ31）
+    # 通常表示層（小サイズ：幅50×高さ31）
     chart_base = base.mark_image(width=50, height=31)
 
     # ホバー判定専用層（透明な判定領域：幅50×高さ31）
-    chart_event = base.mark_image(width=50, height=31, opacity=0).add_params(hover)
+    chart_event = base.mark_image(width=50, height=31, opacity=0).add_params(
+        hover
+    )
 
-    # ホバー時拡大表示層（200%拡大：幅100×高さ62 ＋ ツールチップ表示）
+    # ホバー時拡大表示層（ホバーされた1件のみ拡大：幅100×高さ62 ＋ ツールチップ表示）
     chart_hover = (
         base.mark_image(width=100, height=62)
         .encode(
