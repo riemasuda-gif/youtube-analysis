@@ -43,11 +43,11 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. ホバー判定（マウスオンで有効、離脱で解除）およびY軸ズーム設定
+    # 3. ホバー判定およびY軸ズーム設定
     hover = alt.selection_point(on="pointerover", clear="pointerout")
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. 型を明示した条件分岐（alt.condition）により画像拡大と小窓表示を完全連動
+    # 4. ホバー時のみ画像拡大し、ツールチップ小窓を同期表示
     chart = (
         alt.Chart(df)
         .mark_image()
@@ -62,12 +62,8 @@ try:
             # ホバー時に200%拡大（幅160×高さ100）、通常時は幅80×高さ50
             width=alt.condition(hover, alt.value(160), alt.value(80)),
             height=alt.condition(hover, alt.value(100), alt.value(50)),
-            # 型指定(:N, :Q)を含めたリストを渡すことでエラーを解消しホバー時のみ小窓表示
-            tooltip=alt.condition(
-                hover,
-                ["投稿日:N", "再生数:Q", "クリック率:Q", "平均再生率:Q"],
-                alt.value(None),
-            ),
+            # ツールチップ設定（通常エンコーディングに設定することでホバー時のみ小窓が出現）
+            tooltip=["投稿日:N", "再生数:Q", "クリック率:Q", "平均再生率:Q"],
         )
         .add_params(hover, zoom_y)
         .properties(
