@@ -5,7 +5,7 @@ import streamlit as st
 # 1. 画面の表示幅をワイドモードに設定
 st.set_page_config(layout="wide")
 
-st.header("YouTube動画分析ダッシュボード")
+st.subheader("YouTube動画分析ダッシュボード")
 
 try:
     df = pd.read_csv("youtube_data.csv", encoding="utf-8-sig")
