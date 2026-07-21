@@ -74,12 +74,12 @@ try:
         hover
     )
 
-    # 5. 重ね合わせ・動的タイトルの追加（高さ850pxに拡張）
+    # 5. 重ね合わせ・動的タイトルの追加（高さ750pxに拡張）
     chart = (
         alt.layer(chart_base, chart_hover, chart_event)
         .add_params(zoom_y)
         .properties(
-            height=850,
+            height=750,
             title=f"■ {y_axis_choice}の推移",
         )
     )
