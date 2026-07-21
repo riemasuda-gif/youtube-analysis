@@ -43,11 +43,11 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. ホバー用セレクション（点滅防止のため clear="pointerout" を除去）およびY軸ズーム設定
-    hover = alt.selection_point(on="pointerover", empty=False)
+    # 3. クリック選択用（背景クリックで解除）およびY軸ズーム設定
+    select_click = alt.selection_point(on="click", empty=False)
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. 共通の軸・データエンコーディング（ベース層にツールチップを設定）
+    # 4. 共通の軸・データエンコーディング
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
         y=alt.Y(
@@ -62,15 +62,15 @@ try:
     # 通常表示（幅80×高さ50）
     chart_base = base.mark_image(width=80, height=50)
 
-    # ホバー表示（200%拡大：幅160×高さ100）
+    # クリック選択時の表示（200%拡大：幅160×高さ100）
     chart_hover = base.mark_image(width=160, height=100).transform_filter(
-        hover
+        select_click
     )
 
     # 5. 重ね合わせ・動的タイトルの追加
     chart = (
         alt.layer(chart_base, chart_hover)
-        .add_params(hover, zoom_y)
+        .add_params(select_click, zoom_y)
         .properties(
             height=500,
             title=f"■ {y_axis_choice}の推移",
