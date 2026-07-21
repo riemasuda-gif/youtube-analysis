@@ -43,16 +43,10 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. 各操作条件の設定
-    # サムネイル拡大：ホバーで拡大、マウス離脱（pointerout）で戻る
-    hover_zoom = alt.selection_point(
-        on="pointerover", clear="pointerout", empty=False
-    )
-    # 小窓表示：ホバー（pointerover）で出現、画面クリック（click）で消失
-    click_clear_tooltip = alt.selection_point(
+    # 3. ホバーで拡大・小窓表示し、背景クリック（click）で消去する設定
+    hover_select = alt.selection_point(
         on="pointerover", clear="click", empty=False
     )
-    # Y軸ズーム機能
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
     # 4. 共通の軸・データエンコーディング
@@ -69,24 +63,19 @@ try:
     # 通常表示（幅80×高さ50）
     chart_base = base.mark_image(width=80, height=50)
 
-    # ホバー時拡大表示（幅160×高さ100）
-    chart_hover = base.mark_image(width=160, height=100).transform_filter(
-        hover_zoom
-    )
-
-    # 小窓（ツールチップ）制御層
-    chart_tooltip = (
-        base.mark_image(width=80, height=50)
+    # ホバー時表示（200%拡大：幅160×高さ100 ＋ ツールチップ小窓表示）
+    chart_hover = (
+        base.mark_image(width=160, height=100)
         .encode(
             tooltip=["投稿日", "再生数", "クリック率", "平均再生率"]
         )
-        .transform_filter(click_clear_tooltip)
+        .transform_filter(hover_select)
     )
 
     # 5. 重ね合わせ・動的タイトルの追加
     chart = (
-        alt.layer(chart_base, chart_hover, chart_tooltip)
-        .add_params(hover_zoom, click_clear_tooltip, zoom_y)
+        alt.layer(chart_base, chart_hover)
+        .add_params(hover_select, zoom_y)
         .properties(
             height=500,
             title=f"■ {y_axis_choice}の推移",
