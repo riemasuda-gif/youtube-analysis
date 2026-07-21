@@ -53,7 +53,7 @@ try:
     chart = (
         alt.layer(chart_base, chart_hover)
         .add_params(hover)
-        .properties(width=2000, height=500)
+        .properties(width=1500, height=500)
         .interactive()
     )
 
