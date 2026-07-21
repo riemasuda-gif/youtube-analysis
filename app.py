@@ -55,7 +55,7 @@ try:
         y=alt.Y(
             f"{y_axis_choice}:Q",
             title=y_axis_choice,
-            scale=alt.Scale(domainMin=-100),
+            scale=alt.Scale(domainMin=-10),
         ),
         url="サムネイルURL:N",
         tooltip=["投稿日:N", "再生数:Q", "クリック率:Q", "平均再生率:Q"],
