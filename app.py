@@ -2,7 +2,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-# 1. 画面の表示幅をワイドモードに設定（画面幅の約90%を活用）
+# 1. 画面の表示幅をワイドモードに設定
 st.set_page_config(layout="wide")
 
 st.title("YouTube動画分析ダッシュボード")
@@ -49,15 +49,16 @@ try:
         hover
     )
 
-    # 重ね合わせ
+    # 重ね合わせとサイズ指定（横幅2000固定）
     chart = (
         alt.layer(chart_base, chart_hover)
         .add_params(hover)
-        .properties(height=500)
+        .properties(width=2000, height=500)
         .interactive()
     )
 
-    st.altair_chart(chart, use_container_width=True)
+    # コンテナ幅への自動縮小を解除（横スクロール有効化）
+    st.altair_chart(chart, use_container_width=False)
 
 except FileNotFoundError:
     st.error(
