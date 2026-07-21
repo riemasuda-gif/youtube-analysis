@@ -36,9 +36,15 @@ try:
     pan_x = alt.selection_interval(bind="scales", encodings=["x"])
 
     # 4. 共通エンコーディング
-    base = alt.Chart(df).encode(
+   base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
-        y=alt.Y(f"{y_axis_choice}:Q", title=y_axis_choice),
+        y=alt.Y(
+            f"{y_axis_choice}:Q",
+            title="\n".join(y_axis_choice),  # 1文字ずつ改行を入れて縦書き化
+            axis=alt.Axis(
+                titleAngle=0, titleAlign="center", titleY=-10
+            ),  # 回転を解除して位置調整
+        ),
         url="サムネイルURL",
         tooltip=["投稿日", "再生数", "クリック率", "平均再生率"],
     )
