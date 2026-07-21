@@ -44,12 +44,12 @@ try:
     # 通常時の表示（幅80、高さ50）
     chart_base = base.mark_image(width=80, height=50)
 
-    # ホバー時の表示（120%拡大：幅96、高さ60）＋対象データのみフィルター
-    chart_hover = base.mark_image(width=96, height=60).transform_filter(
+    # ホバー時の表示（200%拡大：幅160、高さ100）＋対象データのみフィルター
+    chart_hover = base.mark_image(width=160, height=100).transform_filter(
         hover
     )
 
-    # 重ね合わせ（後に指定した chart_hover が最前面に描写されます）
+    # 重ね合わせ
     chart = (
         alt.layer(chart_base, chart_hover)
         .add_params(hover)
