@@ -35,16 +35,10 @@ try:
     hover = alt.selection_point(on="pointerover", empty=False)
     pan_x = alt.selection_interval(bind="scales", encodings=["x"])
 
-    # 4. 共通の軸・データエンコーディング（Y軸タイトル縦書き設定）
+    # 4. 共通の軸・データエンコーディング
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
-        y=alt.Y(
-            f"{y_axis_choice}:Q",
-            title="\n".join(y_axis_choice),
-            axis=alt.Axis(
-                titleAngle=0, titleAlign="center", titleY=-10
-            ),
-        ),
+        y=alt.Y(f"{y_axis_choice}:Q", title=y_axis_choice),
         url="サムネイルURL",
         tooltip=["投稿日", "再生数", "クリック率", "平均再生率"],
     )
