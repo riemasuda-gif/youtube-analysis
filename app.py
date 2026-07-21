@@ -31,37 +31,43 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. マウスホバー用およびX軸専用スクロール用のセレクションを定義
+    # 3. ホバー拡大用およびX軸スクロール用の設定
     hover = alt.selection_point(on="pointerover", empty=False)
     pan_x = alt.selection_interval(bind="scales", encodings=["x"])
 
-    # 4. 共通エンコーディング
-   base = alt.Chart(df).encode(
+    # 4. 共通の軸・データエンコーディング（Y軸タイトル縦書き設定）
+    base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
         y=alt.Y(
             f"{y_axis_choice}:Q",
-            title="\n".join(y_axis_choice),  # 1文字ずつ改行を入れて縦書き化
+            title="\n".join(y_axis_choice),
             axis=alt.Axis(
                 titleAngle=0, titleAlign="center", titleY=-10
-            ),  # 回転を解除して位置調整
+            ),
         ),
         url="サムネイルURL",
         tooltip=["投稿日", "再生数", "クリック率", "平均再生率"],
     )
 
+    # 通常表示（幅80×高さ50）
     chart_base = base.mark_image(width=80, height=50)
+
+    # ホバー表示（200%拡大：幅160×高さ100、最前面）
     chart_hover = base.mark_image(width=160, height=100).transform_filter(
         hover
     )
 
-    # 5. 重ね合わせとパラメータ追加
+    # 5. 重ね合わせ・動的タイトルの追加
     chart = (
         alt.layer(chart_base, chart_hover)
         .add_params(hover, pan_x)
-        .properties(height=500)
+        .properties(
+            height=500,
+            title=f"■ {y_axis_choice}の推移",
+        )
     )
 
-    # 画面幅に収めることでY軸（目盛り）を常に画面左側に固定表示
+    # 画面幅いっぱいに固定表示（Y軸固定・X軸のみドラッグスクロール可能）
     st.altair_chart(chart, use_container_width=True)
 
 except FileNotFoundError:
