@@ -47,7 +47,7 @@ try:
     hover = alt.selection_point(on="pointerover", clear="pointerout")
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. 単一マーク内で条件分岐（alt.condition）により拡大と小窓表示を完全連動
+    # 4. 型を明示した条件分岐（alt.condition）により画像拡大と小窓表示を完全連動
     chart = (
         alt.Chart(df)
         .mark_image()
@@ -58,14 +58,14 @@ try:
                 title=y_axis_choice,
                 scale=alt.Scale(domainMin=-100),
             ),
-            url="サムネイルURL",
+            url="サムネイルURL:N",
             # ホバー時に200%拡大（幅160×高さ100）、通常時は幅80×高さ50
             width=alt.condition(hover, alt.value(160), alt.value(80)),
             height=alt.condition(hover, alt.value(100), alt.value(50)),
-            # ホバー時のみ小窓（ツールチップ）を表示し、マウス離脱で消去
+            # 型指定(:N, :Q)を含めたリストを渡すことでエラーを解消しホバー時のみ小窓表示
             tooltip=alt.condition(
                 hover,
-                alt.Tooltip(["投稿日", "再生数", "クリック率", "平均再生率"]),
+                ["投稿日:N", "再生数:Q", "クリック率:Q", "平均再生率:Q"],
                 alt.value(None),
             ),
         )
