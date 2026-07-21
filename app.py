@@ -31,14 +31,20 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. ホバー拡大用およびX軸スクロール用の設定
+    # 3. ホバー拡大用および縦横両軸のズーム/パン用設定
     hover = alt.selection_point(on="pointerover", empty=False)
-    pan_x = alt.selection_interval(bind="scales", encodings=["x"])
+    pan_zoom = alt.selection_interval(bind="scales")
 
-    # 4. 共通の軸・データエンコーディング
+    # 4. 共通の軸・データエンコーディング（Y軸タイトル縦書き設定）
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
-        y=alt.Y(f"{y_axis_choice}:Q", title=y_axis_choice),
+        y=alt.Y(
+            f"{y_axis_choice}:Q",
+            title="\n".join(y_axis_choice),
+            axis=alt.Axis(
+                titleAngle=0, titleAlign="center", titleY=-10
+            ),
+        ),
         url="サムネイルURL",
         tooltip=["投稿日", "再生数", "クリック率", "平均再生率"],
     )
@@ -54,14 +60,14 @@ try:
     # 5. 重ね合わせ・動的タイトルの追加
     chart = (
         alt.layer(chart_base, chart_hover)
-        .add_params(hover, pan_x)
+        .add_params(hover, pan_zoom)
         .properties(
             height=500,
             title=f"■ {y_axis_choice}の推移",
         )
     )
 
-    # 画面幅いっぱいに固定表示（Y軸固定・X軸のみドラッグスクロール可能）
+    # 画面幅いっぱいに固定表示
     st.altair_chart(chart, use_container_width=True)
 
 except FileNotFoundError:
