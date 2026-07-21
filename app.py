@@ -49,7 +49,7 @@ try:
     )
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. 共通の軸・データエンコーディング
+    # 4. 共通の軸・データエンコーディング（tooltip=alt.value(None) で小窓を全無効化）
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
         y=alt.Y(
@@ -58,9 +58,10 @@ try:
             scale=alt.Scale(domainMin=-100),
         ),
         url="サムネイルURL:N",
+        tooltip=alt.value(None),  # 自動生成される小窓（URL等）を完全遮断
     )
 
-    # 通常表示層（拡大サイズ：幅80×高さ50）
+    # 通常表示層（標準サイズ：幅80×高さ50）
     chart_base = base.mark_image(width=80, height=50)
 
     # ホバー判定専用層（透明な判定領域：幅80×高さ50）
@@ -68,7 +69,7 @@ try:
         hover
     )
 
-    # ホバー時拡大表示層（200%拡大：幅160×高さ100／ツールチップ非表示）
+    # ホバー時拡大表示層（200%拡大：幅160×高さ100）
     chart_hover = base.mark_image(width=160, height=100).transform_filter(
         hover
     )
