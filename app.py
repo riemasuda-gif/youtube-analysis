@@ -25,15 +25,17 @@ try:
         st.info(f"現在認識されている列名: {list(df.columns)}")
         st.stop()
 
-    y_axis_choice = st.selectbox(
+    # 2. 選択項目をサイドバーに移動して固定
+    y_axis_choice = st.sidebar.selectbox(
         "表示する指標（縦軸）を選んでください：",
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 2. マウスホバー用のセレクションを定義
+    # 3. マウスホバー用およびX軸専用スクロール用のセレクションを定義
     hover = alt.selection_point(on="pointerover", empty=False)
+    pan_x = alt.selection_interval(bind="scales", encodings=["x"])
 
-    # 3. 共通の軸・データエンコーディング
+    # 4. 共通エンコーディング
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
         y=alt.Y(f"{y_axis_choice}:Q", title=y_axis_choice),
@@ -41,24 +43,20 @@ try:
         tooltip=["投稿日", "再生数", "クリック率", "平均再生率"],
     )
 
-    # 通常時の表示（幅80、高さ50）
     chart_base = base.mark_image(width=80, height=50)
-
-    # ホバー時の表示（200%拡大：幅160、高さ100）＋対象データのみフィルター
     chart_hover = base.mark_image(width=160, height=100).transform_filter(
         hover
     )
 
-    # 重ね合わせとサイズ指定（横幅2000固定）
+    # 5. 重ね合わせとパラメータ追加
     chart = (
         alt.layer(chart_base, chart_hover)
-        .add_params(hover)
-        .properties(width=1500, height=500)
-        .interactive()
+        .add_params(hover, pan_x)
+        .properties(height=500)
     )
 
-    # コンテナ幅への自動縮小を解除（横スクロール有効化）
-    st.altair_chart(chart, use_container_width=False)
+    # 画面幅に収めることでY軸（目盛り）を常に画面左側に固定表示
+    st.altair_chart(chart, use_container_width=True)
 
 except FileNotFoundError:
     st.error(
