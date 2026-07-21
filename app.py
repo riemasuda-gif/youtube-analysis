@@ -43,11 +43,13 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. ホバー拡大用およびY軸（縦軸）専用のズーム/パン設定
-    hover = alt.selection_point(on="pointerover", empty=False)
+    # 3. ホバー拡大用（マウスが外れたらクリアする clear="pointerout" を追加）およびY軸専用ズーム設定
+    hover = alt.selection_point(
+        on="pointerover", clear="pointerout", empty=False
+    )
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. 共通の軸・データエンコーディング（ツールチップ指定を削除）
+    # 4. 共通の軸・データエンコーディング
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
         y=alt.Y(
@@ -58,7 +60,7 @@ try:
         url="サムネイルURL",
     )
 
-    # 通常表示（幅80×高さ50、ツールチップなし）
+    # 通常表示（幅80×高さ50）
     chart_base = base.mark_image(width=80, height=50)
 
     # ホバー表示（カーソルが乗った時だけ200%拡大＋ツールチップ表示）
