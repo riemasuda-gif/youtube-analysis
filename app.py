@@ -35,10 +35,14 @@ try:
     hover = alt.selection_point(on="pointerover", empty=False)
     pan_zoom = alt.selection_interval(bind="scales")
 
-    # 4. 共通の軸・データエンコーディング
+    # 4. 共通の軸・データエンコーディング（Y軸の下限を-100に固定）
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
-        y=alt.Y(f"{y_axis_choice}:Q", title=y_axis_choice),
+        y=alt.Y(
+            f"{y_axis_choice}:Q",
+            title=y_axis_choice,
+            scale=alt.Scale(domainMin=-100),  # 下限を-100に固定
+        ),
         url="サムネイルURL",
         tooltip=["投稿日", "再生数", "クリック率", "平均再生率"],
     )
