@@ -43,13 +43,11 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. ホバー拡大用（マウスが外れたらクリアする clear="pointerout" を追加）およびY軸専用ズーム設定
-    hover = alt.selection_point(
-        on="pointerover", clear="pointerout", empty=False
-    )
+    # 3. ホバー用セレクション（点滅防止のため clear="pointerout" を除去）およびY軸ズーム設定
+    hover = alt.selection_point(on="pointerover", empty=False)
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. 共通の軸・データエンコーディング
+    # 4. 共通の軸・データエンコーディング（ベース層にツールチップを設定）
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
         y=alt.Y(
@@ -58,18 +56,15 @@ try:
             scale=alt.Scale(domainMin=-100),
         ),
         url="サムネイルURL",
+        tooltip=["投稿日", "再生数", "クリック率", "平均再生率"],
     )
 
     # 通常表示（幅80×高さ50）
     chart_base = base.mark_image(width=80, height=50)
 
-    # ホバー表示（カーソルが乗った時だけ200%拡大＋ツールチップ表示）
-    chart_hover = (
-        base.mark_image(width=160, height=100)
-        .encode(
-            tooltip=["投稿日", "再生数", "クリック率", "平均再生率"]
-        )
-        .transform_filter(hover)
+    # ホバー表示（200%拡大：幅160×高さ100）
+    chart_hover = base.mark_image(width=160, height=100).transform_filter(
+        hover
     )
 
     # 5. 重ね合わせ・動的タイトルの追加
