@@ -43,7 +43,7 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. ホバー判定（未選択時の全選択動作を防ぐ empty=False を追加）およびY軸ズーム設定
+    # 3. ホバー判定およびY軸ズーム設定
     hover = alt.selection_point(
         on="pointerover", clear="pointerout", empty=False
     )
@@ -60,21 +60,17 @@ try:
         url="サムネイルURL:N",
     )
 
-    # 通常表示層（小サイズ：幅50×高さ31）
-    chart_base = base.mark_image(width=50, height=31)
+    # 通常表示層（拡大サイズ：幅80×高さ50）
+    chart_base = base.mark_image(width=80, height=50)
 
-    # ホバー判定専用層（透明な判定領域：幅50×高さ31）
-    chart_event = base.mark_image(width=50, height=31, opacity=0).add_params(
+    # ホバー判定専用層（透明な判定領域：幅80×高さ50）
+    chart_event = base.mark_image(width=80, height=50, opacity=0).add_params(
         hover
     )
 
-    # ホバー時拡大表示層（ホバーされた1件のみ拡大：幅100×高さ62 ＋ ツールチップ表示）
-    chart_hover = (
-        base.mark_image(width=100, height=62)
-        .encode(
-            tooltip=["投稿日:N", "再生数:Q", "クリック率:Q", "平均再生率:Q"]
-        )
-        .transform_filter(hover)
+    # ホバー時拡大表示層（200%拡大：幅160×高さ100／ツールチップ非表示）
+    chart_hover = base.mark_image(width=160, height=100).transform_filter(
+        hover
     )
 
     # 5. 重ね合わせ・動的タイトルの追加
