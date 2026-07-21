@@ -43,39 +43,33 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. ホバーで拡大・小窓表示し、背景クリック（click）で消去する設定
-    hover_select = alt.selection_point(
-        on="pointerover", clear="click", empty=False
-    )
+    # 3. ホバー判定（マウスオンで有効、離脱で解除）およびY軸ズーム設定
+    hover = alt.selection_point(on="pointerover", clear="pointerout")
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. 共通の軸・データエンコーディング
-    base = alt.Chart(df).encode(
-        x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
-        y=alt.Y(
-            f"{y_axis_choice}:Q",
-            title=y_axis_choice,
-            scale=alt.Scale(domainMin=-100),
-        ),
-        url="サムネイルURL",
-    )
-
-    # 通常表示（幅80×高さ50）
-    chart_base = base.mark_image(width=80, height=50)
-
-    # ホバー時表示（200%拡大：幅160×高さ100 ＋ ツールチップ小窓表示）
-    chart_hover = (
-        base.mark_image(width=160, height=100)
-        .encode(
-            tooltip=["投稿日", "再生数", "クリック率", "平均再生率"]
-        )
-        .transform_filter(hover_select)
-    )
-
-    # 5. 重ね合わせ・動的タイトルの追加
+    # 4. 単一マーク内で条件分岐（alt.condition）により拡大と小窓表示を完全連動
     chart = (
-        alt.layer(chart_base, chart_hover)
-        .add_params(hover_select, zoom_y)
+        alt.Chart(df)
+        .mark_image()
+        .encode(
+            x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
+            y=alt.Y(
+                f"{y_axis_choice}:Q",
+                title=y_axis_choice,
+                scale=alt.Scale(domainMin=-100),
+            ),
+            url="サムネイルURL",
+            # ホバー時に200%拡大（幅160×高さ100）、通常時は幅80×高さ50
+            width=alt.condition(hover, alt.value(160), alt.value(80)),
+            height=alt.condition(hover, alt.value(100), alt.value(50)),
+            # ホバー時のみ小窓（ツールチップ）を表示し、マウス離脱で消去
+            tooltip=alt.condition(
+                hover,
+                alt.Tooltip(["投稿日", "再生数", "クリック率", "平均再生率"]),
+                alt.value(None),
+            ),
+        )
+        .add_params(hover, zoom_y)
         .properties(
             height=500,
             title=f"■ {y_axis_choice}の推移",
