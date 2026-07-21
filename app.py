@@ -47,25 +47,36 @@ try:
     hover = alt.selection_point(on="pointerover", clear="pointerout")
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. ホバー時のみ画像拡大し、ツールチップ小窓を同期表示
-    chart = (
-        alt.Chart(df)
-        .mark_image()
+    # 4. 共通の軸・データエンコーディング
+    base = alt.Chart(df).encode(
+        x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
+        y=alt.Y(
+            f"{y_axis_choice}:Q",
+            title=y_axis_choice,
+            scale=alt.Scale(domainMin=-100),
+        ),
+        url="サムネイルURL:N",
+    )
+
+    # 通常表示層（幅80×高さ50）
+    chart_base = base.mark_image(width=80, height=50)
+
+    # ホバー判定専用層（透明な判定領域を固定配置し、判定ブレやチラつきを防止）
+    chart_event = base.mark_image(width=80, height=50, opacity=0).add_params(hover)
+
+    # ホバー時拡大表示層（200%拡大：幅160×高さ100 ＋ ツールチップ表示）
+    chart_hover = (
+        base.mark_image(width=160, height=100)
         .encode(
-            x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
-            y=alt.Y(
-                f"{y_axis_choice}:Q",
-                title=y_axis_choice,
-                scale=alt.Scale(domainMin=-100),
-            ),
-            url="サムネイルURL:N",
-            # ホバー時に200%拡大（幅160×高さ100）、通常時は幅80×高さ50
-            width=alt.condition(hover, alt.value(160), alt.value(80)),
-            height=alt.condition(hover, alt.value(100), alt.value(50)),
-            # ツールチップ設定（通常エンコーディングに設定することでホバー時のみ小窓が出現）
-            tooltip=["投稿日:N", "再生数:Q", "クリック率:Q", "平均再生率:Q"],
+            tooltip=["投稿日:N", "再生数:Q", "クリック率:Q", "平均再生率:Q"]
         )
-        .add_params(hover, zoom_y)
+        .transform_filter(hover)
+    )
+
+    # 5. 重ね合わせ・動的タイトルの追加
+    chart = (
+        alt.layer(chart_base, chart_hover, chart_event)
+        .add_params(zoom_y)
         .properties(
             height=500,
             title=f"■ {y_axis_choice}の推移",
