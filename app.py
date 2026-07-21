@@ -11,6 +11,18 @@ try:
     df = pd.read_csv("youtube_data.csv", encoding="utf-8-sig")
     df.columns = df.columns.str.strip()
 
+    # 数値列のカンマや%を除去して数値型に変換
+    num_cols = ["再生数", "クリック率", "平均再生率"]
+    for col in num_cols:
+        if col in df.columns and df[col].dtype == "object":
+            df[col] = (
+                df[col]
+                .astype(str)
+                .str.replace("%", "")
+                .str.replace(",", "")
+            )
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
     expected_cols = [
         "投稿日",
         "サムネイルURL",
@@ -31,17 +43,17 @@ try:
         ["再生数", "クリック率", "平均再生率"],
     )
 
-    # 3. ホバー拡大用および縦横両軸のズーム/パン用設定
+    # 3. ホバー拡大用およびY軸（縦軸）専用のズーム/パン設定
     hover = alt.selection_point(on="pointerover", empty=False)
-    pan_zoom = alt.selection_interval(bind="scales")
+    zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. 共通の軸・データエンコーディング（Y軸の下限を-100に固定）
+    # 4. 共通の軸・データエンコーディング（下限-100に固定）
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
         y=alt.Y(
             f"{y_axis_choice}:Q",
             title=y_axis_choice,
-            scale=alt.Scale(domainMin=-100),  # 下限を-100に固定
+            scale=alt.Scale(domainMin=-100),
         ),
         url="サムネイルURL",
         tooltip=["投稿日", "再生数", "クリック率", "平均再生率"],
@@ -58,7 +70,7 @@ try:
     # 5. 重ね合わせ・動的タイトルの追加
     chart = (
         alt.layer(chart_base, chart_hover)
-        .add_params(hover, pan_zoom)
+        .add_params(hover, zoom_y)
         .properties(
             height=500,
             title=f"■ {y_axis_choice}の推移",
