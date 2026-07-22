@@ -12,7 +12,8 @@ try:
     df.columns = df.columns.str.strip()
 
     # 数値列のカンマや%を除去して数値型に変換
-    num_cols = ["再生数", "クリック率", "平均再生率"]
+    # 対象カラムに「44歳以下の視聴者」「登録者数」を追加
+    num_cols = ["再生数", "クリック率", "平均再生率", "44歳以下の視聴者", "登録者数"]
     for col in num_cols:
         if col in df.columns and df[col].dtype == "object":
             df[col] = (
@@ -20,7 +21,9 @@ try:
                 .astype(str)
                 .str.replace("%", "")
                 .str.replace(",", "")
+                .str.replace("-", "")  # ハイフンを除去
             )
+            # errors="coerce"により、数値化できない値（空白など）は自動でNaN（欠損値）になりエラーを回避
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
     expected_cols = [
@@ -29,6 +32,8 @@ try:
         "再生数",
         "クリック率",
         "平均再生率",
+        "44歳以下の視聴者",
+        "登録者数"
     ]
     missing_cols = [c for c in expected_cols if c not in df.columns]
 
@@ -40,7 +45,7 @@ try:
     # 2. 選択項目をサイドバーに移動して固定
     y_axis_choice = st.sidebar.selectbox(
         "表示する指標（縦軸）を選んでください：",
-        ["再生数", "クリック率", "平均再生率"],
+        ["再生数", "クリック率", "平均再生率", "44歳以下の視聴者", "登録者数"],
     )
 
     # 3. ホバー判定およびY軸ズーム設定
@@ -49,7 +54,7 @@ try:
     )
     zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
 
-    # 4. 共通の軸・データエンコーディング（小窓表示項目を明示的に固定指定）
+    # 4. 共通の軸・データエンコーディング（小窓表示項目に追加）
     base = alt.Chart(df).encode(
         x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
         y=alt.Y(
@@ -58,7 +63,7 @@ try:
             scale=alt.Scale(domainMin=-10),
         ),
         url="サムネイルURL:N",
-        tooltip=["投稿日:N", "再生数:Q", "クリック率:Q", "平均再生率:Q"],
+        tooltip=["投稿日:N", "再生数:Q", "クリック率:Q", "平均再生率:Q", "44歳以下の視聴者:Q", "登録者数:Q"],
     )
 
     # 通常表示層（標準サイズ：幅80×高さ50）
