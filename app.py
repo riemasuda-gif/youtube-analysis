@@ -12,7 +12,6 @@ try:
     df.columns = df.columns.str.strip()
 
     # 数値列のカンマや%を除去して数値型に変換
-    # 対象カラムに「44歳以下の視聴者」「登録者数」を追加
     num_cols = ["再生数", "クリック率", "平均再生率", "44歳以下の視聴者", "登録者数"]
     for col in num_cols:
         if col in df.columns and df[col].dtype == "object":
@@ -23,7 +22,7 @@ try:
                 .str.replace(",", "")
                 .str.replace("-", "")  # ハイフンを除去
             )
-            # errors="coerce"により、数値化できない値（空白など）は自動でNaN（欠損値）になりエラーを回避
+            # errors="coerce"により、数値化できない値は自動でNaNになりエラーを回避
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
     expected_cols = [
@@ -42,21 +41,38 @@ try:
         st.info(f"現在認識されている列名: {list(df.columns)}")
         st.stop()
 
-    # 2. 選択項目をサイドバーに移動して固定
+    # 2. サイドバーで横軸・縦軸を自由に選択可能に変更
+    axis_options = ["投稿日", "再生数", "クリック率", "平均再生率", "44歳以下の視聴者", "登録者数"]
+
+    x_axis_choice = st.sidebar.selectbox(
+        "表示する指標（横軸）を選んでください：",
+        axis_options,
+        index=0  # デフォルト: 投稿日
+    )
+
     y_axis_choice = st.sidebar.selectbox(
         "表示する指標（縦軸）を選んでください：",
         ["再生数", "クリック率", "平均再生率", "44歳以下の視聴者", "登録者数"],
+        index=3  # デフォルト: 44歳以下の視聴者
     )
 
-    # 3. ホバー判定およびY軸ズーム設定
+    # 横軸のデータ型判定（投稿日の場合は名目:N、数値データの場合は数量:Q）
+    x_type = ":N" if x_axis_choice == "投稿日" else ":Q"
+    x_sort = "ascending" if x_axis_choice == "投稿日" else None
+
+    # 3. ホバー判定およびXY軸ズーム設定
     hover = alt.selection_point(
         on="pointerover", clear="pointerout", empty=False
     )
-    zoom_y = alt.selection_interval(bind="scales", encodings=["y"])
+    zoom_axes = alt.selection_interval(bind="scales", encodings=["x", "y"])
 
-    # 4. 共通の軸・データエンコーディング（小窓表示項目に追加）
+    # 4. 共通の軸・データエンコーディング
     base = alt.Chart(df).encode(
-        x=alt.X("投稿日:N", title="投稿日", sort="ascending"),
+        x=alt.X(
+            f"{x_axis_choice}{x_type}",
+            title=x_axis_choice,
+            sort=x_sort
+        ),
         y=alt.Y(
             f"{y_axis_choice}:Q",
             title=y_axis_choice,
@@ -79,13 +95,13 @@ try:
         hover
     )
 
-    # 5. 重ね合わせ・動的タイトルの追加（高さ950pxに拡張）
+    # 5. 重ね合わせ・動的タイトルの追加（高さ950px）
     chart = (
         alt.layer(chart_base, chart_hover, chart_event)
-        .add_params(zoom_y)
+        .add_params(zoom_axes)
         .properties(
             height=950,
-            title=f"■ {y_axis_choice}の推移",
+            title=f"■ {x_axis_choice}（横） × {y_axis_choice}（縦）の分析グラフ",
         )
     )
 
@@ -94,8 +110,7 @@ try:
 
 except FileNotFoundError:
     st.error(
-        "youtube_data.csv"
-        " が見つかりません。app.pyと同じフォルダに置いてください。"
+        "youtube_data.csv が見つかりません。app.pyと同じフォルダに置いてください。"
     )
 except Exception as e:
     st.error("予期せぬエラーが発生しました：")
